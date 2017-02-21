@@ -1,0 +1,107 @@
+apply plugin: 'com.android.library'
+
+//声明上传发布打包脚本
+ext {
+    bintrayRepo = 'maven'
+    bintrayName = 'mylibrary'
+
+    publishedGroupId = 'cn.vlooks.www.app'
+    artifact = 'base_mylibrary'
+
+    libraryVersion = '1.0.0'
+    libraryName = 'AndroidBasicFramework'
+    libraryDescription = 'Android develop framework,include basic base classes/widgets/tools/common abstract'
+
+    siteUrl = 'https://github.com/yanligang/mylibrary'
+    gitUrl = 'https://github.com/yanligang/mylibrary.git'
+
+    developerId = 'yanligang'
+    developerName = '闫黎刚'
+    developerEmail = 'ylg329923@163.com'
+
+    allLicenses = ["Apache-2.0"]
+    licenseName = 'The Apache Software License, Version 2.0'
+    licenseUrl = 'http://www.apache.org/licenses/LICENSE-2.0.txt'
+
+
+
+}
+
+
+android {
+    compileSdkVersion 24
+    buildToolsVersion "24.0.1"
+
+    defaultConfig {
+        minSdkVersion 15
+        targetSdkVersion 24
+        versionCode 1
+        versionName libraryVersion
+        testInstrumentationRunner "android.support.test.runner.AndroidJUnitRunner"
+        ndk {
+            // 设置支持的SO库架构,x86是为了支持模拟器运行
+            abiFilters 'armeabi' , 'x86' //, 'armeabi-v7a', 'x86_64', 'arm64-v8a'
+        }
+
+    }
+
+    // 移除lint检查的error
+    lintOptions {
+        abortOnError false
+    }
+
+    //指定so库目录
+    sourceSets {
+        main {
+            jniLibs.srcDirs = ['libs']//这一行是没有的，如果我们有.so文件就需要加上这一行代码
+        }
+    }
+
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+    }
+}
+
+dependencies {
+    compile fileTree(include: ['*.jar'], dir: 'libs')
+    testCompile 'junit:junit:4.12'
+    compile 'com.android.support:recyclerview-v7:24.2.1'
+    compile 'com.android.support:appcompat-v7:24.2.1'
+    compile 'com.nostra13.universalimageloader:universal-image-loader:1.9.5'
+    compile 'org.xutils:xutils:3.3.36'
+    compile 'com.google.code.gson:gson:2.6.2'
+    compile 'com.nineoldandroids:parent:2.4.0'
+    compile 'com.loopj.android:android-async-http:1.4.9'
+    compile 'com.nineoldandroids:library:2.4.0'
+    compile 'com.google.zxing:core:3.2.1'
+    compile 'com.tencent.bugly:crashreport:latest.release'
+    //其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.1.5
+    compile 'com.tencent.bugly:nativecrashreport:latest.release'
+    //其中latest.release指代最新版本号，也可以指定明确的版本号，例如2.2.0
+    compile 'in.srain.cube:ultra-ptr:1.0.11'
+    compile 'org.greenrobot:eventbus:3.0.0'
+    compile 'fm.jiecao:jiecaovideoplayer:3.6.1'
+    compile 'com.charonchui.vitamio:vitamio:4.2.2'
+    compile 'com.alibaba:fastjson:1.2.8'
+    compile 'com.danikula:videocache:2.6.4'
+    debugCompile 'com.squareup.leakcanary:leakcanary-android:1.5'
+    releaseCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+    testCompile 'com.squareup.leakcanary:leakcanary-android-no-op:1.5'
+}
+
+
+//生成jar脚本--> gradle makeJar
+apply from: 'build-jar.gradle'
+
+//注意：不能放到第二行，否则会报错，顺序不能动,执行以下命令发布到仓库
+// -->gradle install
+// --> gradle bintrayUpload
+apply from: 'install-module.gradle'
+apply from: 'bintray-upload.gradle'
+
+
+

@@ -1,0 +1,149 @@
+<?xml version="1.0" encoding="utf-8"?><!-- 共通标题栏 -->
+<RelativeLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    android:id="@+id/rl_title_container"
+    android:layout_width="match_parent"
+    android:layout_height="@dimen/common_title_height"
+    android:background="@color/reds">
+
+    <!-- 左边按钮容器 -->
+
+    <LinearLayout
+        android:id="@+id/ll_left_btns"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentLeft="true"
+        android:gravity="left|center_vertical"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <!-- 菜单按钮 -->
+
+        <ImageButton
+            android:id="@+id/iv_menu"
+            android:layout_width="@dimen/common_title_height"
+            android:layout_height="match_parent"
+            android:background="@drawable/selector_common_transparent_btn"
+            android:contentDescription="@null"
+            android:scaleType="center"
+            android:src="@drawable/common_nav_menu_white_n"
+            android:visibility="gone" />
+
+        <!-- 返回按钮 -->
+
+        <ImageButton
+            android:id="@+id/iv_back"
+            android:layout_width="@dimen/common_title_height"
+            android:layout_height="match_parent"
+            android:background="@drawable/selector_common_transparent_btn"
+            android:contentDescription="@null"
+            android:scaleType="center"
+            android:src="@drawable/selector_common_back_white_btn"
+            android:visibility="visible"
+            />
+
+        <TextView
+            android:layout_width="wrap_content"
+            android:layout_height="wrap_content"
+            android:id="@+id/text_left"
+            android:textColor="@color/white"/>
+    </LinearLayout>
+
+    <!-- 标题 -->
+
+    <TextView
+        android:layout_centerHorizontal="true"
+        android:id="@+id/tv_title"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:ellipsize="end"
+        android:gravity="center"
+        android:singleLine="true"
+        android:text=""
+        android:textColor="@color/white"
+        android:textSize="20sp"
+        android:visibility="visible" />
+
+    <!-- 右侧按钮容器 -->
+
+    <LinearLayout
+        android:id="@+id/ll_right_btns"
+        android:layout_width="wrap_content"
+        android:layout_height="match_parent"
+        android:layout_alignParentRight="true"
+        android:gravity="right|center_vertical"
+        android:orientation="horizontal"
+        android:visibility="visible">
+
+        <!-- 收藏按钮 -->
+
+        <ImageButton
+            android:id="@+id/iv_fav"
+            android:layout_width="@dimen/common_title_height"
+            android:layout_height="match_parent"
+            android:background="@drawable/common_nav_fav_white_n"
+            android:button="@drawable/selector_common_transparent_btn"
+            android:checked="false"
+            android:textColor="#666666"
+            android:textSize="16.67sp"
+            android:visibility="gone" />
+
+
+        <!-- 分享按钮 -->
+        <ImageButton
+            android:id="@+id/iv_share"
+            android:layout_width="@dimen/common_title_height"
+            android:layout_height="match_parent"
+            android:background="@drawable/common_nav_share_white_n"
+            android:button="@drawable/selector_common_transparent_btn"
+            android:checked="false"
+            android:textColor="#666666"
+            android:textSize="16.67sp"
+            android:visibility="gone" />
+
+        <!-- 完成/提交共用按钮-图片类型 -->
+
+        <ImageButton
+            android:id="@+id/iv_done"
+            android:layout_width="@dimen/common_title_height"
+            android:layout_height="match_parent"
+            android:background="@drawable/selector_common_transparent_btn"
+            android:visibility="gone" />
+
+        <!-- 完成/提交共用按钮-文本类型 -->
+        <Button
+            android:id="@+id/btn_done"
+            android:layout_width="@dimen/common_title_height"
+            android:layout_height="match_parent"
+            android:background="@drawable/selector_common_transparent_btn"
+            android:gravity="center"
+            android:text=""
+            android:textColor="@color/white"
+            android:textSize="@dimen/length20"
+            android:visibility="gone"
+            />
+
+    </LinearLayout>
+
+    <!-- 底部线 -->
+
+    <View
+        android:id="@+id/title_buttom_line"
+        android:layout_width="match_parent"
+        android:layout_height="0.33dp"
+        android:layout_alignParentBottom="true"
+        android:background="#dddddd"
+        android:visibility="gone" />
+
+    <!--Web页面需要进度条 -->
+    <ProgressBar
+        android:id="@+id/pb_load_progress"
+        style="@style/ProgressBar_Mini"
+        android:layout_width="match_parent"
+        android:layout_height="3dp"
+        android:layout_alignParentBottom="true"
+        android:layout_gravity="center"
+        android:max="100"
+        android:progress="0"
+        android:visibility="gone" />
+
+</RelativeLayout>
