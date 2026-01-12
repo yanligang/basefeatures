@@ -68,6 +68,12 @@ public class ApsProductionDemandPmcNew implements Serializable {
     private String productCode;
 
     /**
+     * 客户位置
+     */
+    @TableField("customer_location")
+    private String customerLocation;
+
+    /**
      * 需求日期
      */
     @TableField("demand_date")

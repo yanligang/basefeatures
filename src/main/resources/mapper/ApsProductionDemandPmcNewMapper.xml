@@ -11,6 +11,7 @@
         <result column="product_category" property="productCategory"/>
         <result column="customer_code" property="customerCode"/>
         <result column="product_code" property="productCode"/>
+        <result column="customer_location" property="customerLocation"/>
         <result column="demand_date" property="demandDate"/>
         <result column="net_demand_quantity" property="netDemandQuantity"/>
         <result column="create_time" property="createTime"/>
@@ -35,7 +36,7 @@
     <!-- 通用查询结果列 -->
     <sql id="Base_Column_List">
         id, scenario_id, demand_id, type, product_category, customer_code, 
-        product_code, demand_date, net_demand_quantity, create_time, update_time
+        product_code, customer_location, demand_date, net_demand_quantity, create_time, update_time
     </sql>
 
     <!-- 生产需求联表查询SQL -->
@@ -89,11 +90,23 @@
             <if test="query.scenarioId != null">
                 AND apdpn.scenario_id = #{query.scenarioId}
             </if>
-            <if test="query.customerCode != null and query.customerCode != ''">
-                AND apdpn.customer_code = #{query.customerCode}
+            <if test="query.customerCodeList != null and query.customerCodeList.size() > 0">
+                AND apdpn.customer_code IN
+                <foreach collection="query.customerCodeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
-            <if test="query.productCode != null and query.productCode != ''">
-                AND apdpn.product_code = #{query.productCode}
+            <if test="query.productCodeList != null and query.productCodeList.size() > 0">
+                AND apdpn.product_code IN
+                <foreach collection="query.productCodeList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
+            </if>
+            <if test="query.customerLocationList != null and query.customerLocationList.size() > 0">
+                AND apdpn.customer_location IN
+                <foreach collection="query.customerLocationList" item="item" open="(" separator="," close=")">
+                    #{item}
+                </foreach>
             </if>
             <if test="query.productionPlant != null and query.productionPlant != ''">
                 AND aspn.production_plant = #{query.productionPlant}

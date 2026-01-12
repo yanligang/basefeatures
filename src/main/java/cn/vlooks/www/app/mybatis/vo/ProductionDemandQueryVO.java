@@ -4,6 +4,7 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.time.LocalDateTime;
+import java.util.List;
 
 /**
  * 生产需求查询条件VO
@@ -31,14 +32,19 @@ public class ProductionDemandQueryVO implements Serializable {
     private Long scenarioId;
 
     /**
-     * 客户编码
+     * 客户编码列表 (IN查询)
      */
-    private String customerCode;
+    private List<String> customerCodeList;
 
     /**
-     * 产品编码
+     * 产品编码列表 (IN查询)
      */
-    private String productCode;
+    private List<String> productCodeList;
+
+    /**
+     * 客户位置列表 (IN查询)
+     */
+    private List<String> customerLocationList;
 
     /**
      * 生产工厂
