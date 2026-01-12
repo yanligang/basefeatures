@@ -27,6 +27,7 @@
         <result column="quantity" property="quantity"/>
         <result column="product_code" property="productCode"/>
         <result column="demand_start_time" property="demandStartTime" javaType="java.lang.String"/>
+        <result column="demand_start_time" property="demandTime" javaType="java.lang.String"/>
         <result column="net_demand_quantity" property="netDemandQuantity"/>
         <result column="product_name" property="productName"/>
         <result column="platform" property="platform"/>

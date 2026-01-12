@@ -51,6 +51,11 @@ public class ProductionDemandVO implements Serializable {
     private String demandStartTime;
 
     /**
+     * 需求时间 (同 demandStartTime)
+     */
+    private String demandTime;
+
+    /**
      * 净需求数量
      */
     private BigDecimal netDemandQuantity;
