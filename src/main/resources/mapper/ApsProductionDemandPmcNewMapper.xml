@@ -1,0 +1,124 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.vlooks.www.app.mybatis.mapper.ApsProductionDemandPmcNewMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.vlooks.www.app.mybatis.entity.ApsProductionDemandPmcNew">
+        <id column="id" property="id"/>
+        <result column="scenario_id" property="scenarioId"/>
+        <result column="demand_id" property="demandId"/>
+        <result column="type" property="type"/>
+        <result column="product_category" property="productCategory"/>
+        <result column="customer_code" property="customerCode"/>
+        <result column="product_code" property="productCode"/>
+        <result column="demand_date" property="demandDate"/>
+        <result column="net_demand_quantity" property="netDemandQuantity"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 生产需求VO映射结果 -->
+    <resultMap id="ProductionDemandVOResultMap" type="cn.vlooks.www.app.mybatis.vo.ProductionDemandVO">
+        <result column="plant_code" property="plantCode"/>
+        <result column="resource_code" property="resourceCode"/>
+        <result column="category" property="category"/>
+        <result column="period_start_time" property="periodStartTime"/>
+        <result column="quantity" property="quantity"/>
+        <result column="product_code" property="productCode"/>
+        <result column="demand_start_time" property="demandStartTime"/>
+        <result column="net_demand_quantity" property="netDemandQuantity"/>
+        <result column="product_name" property="productName"/>
+        <result column="platform" property="platform"/>
+        <result column="product_model" property="productModel"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, scenario_id, demand_id, type, product_category, customer_code, 
+        product_code, demand_date, net_demand_quantity, create_time, update_time
+    </sql>
+
+    <!-- 生产需求联表查询SQL -->
+    <sql id="Production_Demand_Query_Sql">
+        SELECT
+            aspn.production_plant AS plant_code,
+            aspn.production_resource AS resource_code,
+            aspn.category AS category,
+            aspn.production_date AS period_start_time,
+            aspn.production_quantity AS quantity,
+            apdpn.product_code AS product_code,
+            apdpn.demand_date AS demand_start_time,
+            apdpn.net_demand_quantity AS net_demand_quantity,
+            inrp.product_name AS product_name,
+            inrp.platform AS platform,
+            inrp.product_model AS product_model
+        FROM
+            aps_production_demand_pmc_new apdpn
+        LEFT JOIN aps_relation_pmc_new arpn ON
+            apdpn.scenario_id = arpn.scenario_id
+            AND apdpn.id = arpn.demand_id
+        LEFT JOIN aps_supply_pmc_new aspn ON
+            apdpn.scenario_id = aspn.scenario_id
+            AND aspn.supply_code = arpn.supply_code
+        LEFT JOIN (
+            SELECT
+                scenario_id,
+                product_code,
+                MAX(product_name) AS product_name,
+                MAX(platform) AS platform,
+                MAX(product_model) AS product_model
+            FROM
+                inr_product
+            GROUP BY
+                scenario_id,
+                product_code
+        ) inrp ON
+            apdpn.scenario_id = inrp.scenario_id
+            AND inrp.product_code = apdpn.product_code
+    </sql>
+
+    <!-- 查询条件 -->
+    <sql id="Query_Where_Clause">
+        <where>
+            <if test="query.type != null">
+                AND apdpn.type = #{query.type}
+            </if>
+            <if test="query.productCategory != null and query.productCategory != ''">
+                AND apdpn.product_category = #{query.productCategory}
+            </if>
+            <if test="query.scenarioId != null">
+                AND apdpn.scenario_id = #{query.scenarioId}
+            </if>
+            <if test="query.customerCode != null and query.customerCode != ''">
+                AND apdpn.customer_code = #{query.customerCode}
+            </if>
+            <if test="query.productCode != null and query.productCode != ''">
+                AND apdpn.product_code = #{query.productCode}
+            </if>
+            <if test="query.productionPlant != null and query.productionPlant != ''">
+                AND aspn.production_plant = #{query.productionPlant}
+            </if>
+            <if test="query.productionResource != null and query.productionResource != ''">
+                AND aspn.production_resource = #{query.productionResource}
+            </if>
+            <if test="query.productionDateStart != null and query.productionDateEnd != null">
+                AND aspn.production_date BETWEEN #{query.productionDateStart} AND #{query.productionDateEnd}
+            </if>
+        </where>
+    </sql>
+
+    <!-- 分页查询生产需求 -->
+    <select id="selectProductionDemandPage" resultMap="ProductionDemandVOResultMap">
+        <include refid="Production_Demand_Query_Sql"/>
+        <include refid="Query_Where_Clause"/>
+        ORDER BY apdpn.demand_date DESC
+    </select>
+
+    <!-- 查询生产需求列表（不分页） -->
+    <select id="selectProductionDemandList" resultMap="ProductionDemandVOResultMap">
+        <include refid="Production_Demand_Query_Sql"/>
+        <include refid="Query_Where_Clause"/>
+        ORDER BY apdpn.demand_date DESC
+    </select>
+
+</mapper>
