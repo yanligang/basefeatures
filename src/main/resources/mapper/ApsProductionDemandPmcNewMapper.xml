@@ -57,7 +57,17 @@
             inrp.product_model AS product_model
         FROM
             aps_production_demand_pmc_new apdpn
-        LEFT JOIN aps_relation_pmc_new arpn ON
+        LEFT JOIN (
+            SELECT
+                scenario_id,
+                demand_id,
+                MIN(supply_code) AS supply_code
+            FROM
+                aps_relation_pmc_new
+            GROUP BY
+                scenario_id,
+                demand_id
+        ) arpn ON
             apdpn.scenario_id = arpn.scenario_id
             AND apdpn.id = arpn.demand_id
         LEFT JOIN (
