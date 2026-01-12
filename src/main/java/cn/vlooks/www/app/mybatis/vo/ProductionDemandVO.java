@@ -4,7 +4,6 @@ import lombok.Data;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
-import java.time.LocalDateTime;
 
 /**
  * 生产需求查询结果VO
@@ -34,7 +33,7 @@ public class ProductionDemandVO implements Serializable {
     /**
      * 期间开始时间
      */
-    private LocalDateTime periodStartTime;
+    private String periodStartTime;
 
     /**
      * 数量
@@ -49,7 +48,7 @@ public class ProductionDemandVO implements Serializable {
     /**
      * 需求开始时间
      */
-    private LocalDateTime demandStartTime;
+    private String demandStartTime;
 
     /**
      * 净需求数量

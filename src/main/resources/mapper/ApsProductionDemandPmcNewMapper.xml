@@ -23,10 +23,10 @@
         <result column="plant_code" property="plantCode"/>
         <result column="resource_code" property="resourceCode"/>
         <result column="category" property="category"/>
-        <result column="period_start_time" property="periodStartTime"/>
+        <result column="period_start_time" property="periodStartTime" javaType="java.lang.String"/>
         <result column="quantity" property="quantity"/>
         <result column="product_code" property="productCode"/>
-        <result column="demand_start_time" property="demandStartTime"/>
+        <result column="demand_start_time" property="demandStartTime" javaType="java.lang.String"/>
         <result column="net_demand_quantity" property="netDemandQuantity"/>
         <result column="product_name" property="productName"/>
         <result column="platform" property="platform"/>
