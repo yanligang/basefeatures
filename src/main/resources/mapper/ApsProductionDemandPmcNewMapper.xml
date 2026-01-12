@@ -50,6 +50,7 @@
             aspn.production_quantity AS quantity,
             apdpn.product_code AS product_code,
             apdpn.demand_date AS demand_start_time,
+            apdpn.demand_date AS demand_time,
             apdpn.net_demand_quantity AS net_demand_quantity,
             inrp.product_name AS product_name,
             inrp.platform AS platform,
@@ -59,7 +60,21 @@
         LEFT JOIN aps_relation_pmc_new arpn ON
             apdpn.scenario_id = arpn.scenario_id
             AND apdpn.id = arpn.demand_id
-        LEFT JOIN aps_supply_pmc_new aspn ON
+        LEFT JOIN (
+            SELECT
+                scenario_id,
+                supply_code,
+                MAX(production_plant) AS production_plant,
+                MAX(production_resource) AS production_resource,
+                MAX(category) AS category,
+                MAX(production_date) AS production_date,
+                SUM(production_quantity) AS production_quantity
+            FROM
+                aps_supply_pmc_new
+            GROUP BY
+                scenario_id,
+                supply_code
+        ) aspn ON
             apdpn.scenario_id = aspn.scenario_id
             AND aspn.supply_code = arpn.supply_code
         LEFT JOIN (
