@@ -1,0 +1,27 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN" "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+<mapper namespace="cn.vlooks.www.app.mybatis.mapper.ApsSupplyPmcNewMapper">
+
+    <!-- 通用查询映射结果 -->
+    <resultMap id="BaseResultMap" type="cn.vlooks.www.app.mybatis.entity.ApsSupplyPmcNew">
+        <id column="id" property="id"/>
+        <result column="scenario_id" property="scenarioId"/>
+        <result column="supply_code" property="supplyCode"/>
+        <result column="production_plant" property="productionPlant"/>
+        <result column="production_resource" property="productionResource"/>
+        <result column="category" property="category"/>
+        <result column="production_date" property="productionDate"/>
+        <result column="production_quantity" property="productionQuantity"/>
+        <result column="product_code" property="productCode"/>
+        <result column="create_time" property="createTime"/>
+        <result column="update_time" property="updateTime"/>
+    </resultMap>
+
+    <!-- 通用查询结果列 -->
+    <sql id="Base_Column_List">
+        id, scenario_id, supply_code, production_plant, production_resource, 
+        category, production_date, production_quantity, product_code, 
+        create_time, update_time
+    </sql>
+
+</mapper>
