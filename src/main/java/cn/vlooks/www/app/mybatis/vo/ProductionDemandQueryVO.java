@@ -3,7 +3,6 @@ package cn.vlooks.www.app.mybatis.vo;
 import lombok.Data;
 
 import java.io.Serializable;
-import java.time.LocalDateTime;
 import java.util.List;
 
 /**
@@ -57,14 +56,14 @@ public class ProductionDemandQueryVO implements Serializable {
     private String productionResource;
 
     /**
-     * 生产日期开始
+     * 生产日期开始 (格式: yyyy-MM-dd)
      */
-    private LocalDateTime productionDateStart;
+    private String productionDateStart;
 
     /**
-     * 生产日期结束
+     * 生产日期结束 (格式: yyyy-MM-dd)
      */
-    private LocalDateTime productionDateEnd;
+    private String productionDateEnd;
 
     /**
      * 页码
