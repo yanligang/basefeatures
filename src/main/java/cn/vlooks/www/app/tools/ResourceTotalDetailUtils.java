@@ -357,4 +357,66 @@ public class ResourceTotalDetailUtils {
         String key = plantCode + "_" + resourceCode + "_" + (periodStartTimeStr != null ? periodStartTimeStr : "");
         return groupedMap.get(key);
     }
+
+    /**
+     * 按工厂代码、资源代码、区间开始时间分组，获取每组的 totalAbleQuantity 总和
+     * 返回三层嵌套 Map: plantCode -> resourceCode -> periodStartTime(yyyy-MM-dd) -> totalAbleQuantity
+     * 使用 Stream 流处理
+     *
+     * @param resourceTotalDetailList 资源总量详情列表
+     * @return 分组后的嵌套 Map
+     */
+    public static Map<String, Map<String, Map<String, BigDecimal>>> groupByPlantResourcePeriodNested(
+            List<ResourceTotalDetail> resourceTotalDetailList) {
+
+        if (resourceTotalDetailList == null || resourceTotalDetailList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return resourceTotalDetailList.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(
+                        detail -> detail.getPlantCode() != null ? detail.getPlantCode() : "",
+                        Collectors.groupingBy(
+                                detail -> detail.getResourceCode() != null ? detail.getResourceCode() : "",
+                                Collectors.groupingBy(
+                                        ResourceTotalDetail::getPeriodStartTimeFormatted,
+                                        Collectors.reducing(
+                                                BigDecimal.ZERO,
+                                                detail -> detail.getTotalAbleQuantity() != null ? detail.getTotalAbleQuantity() : BigDecimal.ZERO,
+                                                BigDecimal::add
+                                        )
+                                )
+                        )
+                ));
+    }
+
+    /**
+     * 从嵌套 Map 中获取 totalAbleQuantity
+     *
+     * @param nestedMap          嵌套 Map
+     * @param plantCode          工厂代码
+     * @param resourceCode       资源代码
+     * @param periodStartTimeStr 区间开始时间 (yyyy-MM-dd格式)
+     * @return 对应的 totalAbleQuantity，如果未找到返回 null
+     */
+    public static BigDecimal getTotalAbleQuantityFromNestedMap(
+            Map<String, Map<String, Map<String, BigDecimal>>> nestedMap,
+            String plantCode,
+            String resourceCode,
+            String periodStartTimeStr) {
+
+        if (nestedMap == null || nestedMap.isEmpty()) {
+            return null;
+        }
+
+        String plant = plantCode != null ? plantCode : "";
+        String resource = resourceCode != null ? resourceCode : "";
+        String period = periodStartTimeStr != null ? periodStartTimeStr : "";
+
+        return Optional.ofNullable(nestedMap.get(plant))
+                .map(m -> m.get(resource))
+                .map(m -> m.get(period))
+                .orElse(null);
+    }
 }
