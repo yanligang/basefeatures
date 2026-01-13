@@ -2,6 +2,7 @@ package cn.vlooks.www.app.bean;
 
 import java.io.Serializable;
 import java.math.BigDecimal;
+import java.text.SimpleDateFormat;
 import java.util.Date;
 
 /**
@@ -147,13 +148,29 @@ public class ResourceTotalDetail implements Serializable {
         this.occupiedQuantity = occupiedQuantity;
     }
 
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
     /**
-     * 生成分组Key：工厂代码_资源代码_区间开始时间
+     * 获取格式化后的区间开始时间 (yyyy-MM-dd)
+     *
+     * @return 格式化后的日期字符串
+     */
+    public String getPeriodStartTimeFormatted() {
+        if (periodStartTime == null) {
+            return "";
+        }
+        synchronized (DATE_FORMAT) {
+            return DATE_FORMAT.format(periodStartTime);
+        }
+    }
+
+    /**
+     * 生成分组Key：工厂代码_资源代码_区间开始时间(yyyy-MM-dd)
      *
      * @return 分组Key
      */
     public String getGroupKey() {
-        return plantCode + "_" + resourceCode + "_" + (periodStartTime != null ? periodStartTime.getTime() : "");
+        return plantCode + "_" + resourceCode + "_" + getPeriodStartTimeFormatted();
     }
 
     @Override

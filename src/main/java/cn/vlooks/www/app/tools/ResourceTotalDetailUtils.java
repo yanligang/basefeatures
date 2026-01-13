@@ -3,20 +3,41 @@ package cn.vlooks.www.app.tools;
 import cn.vlooks.www.app.bean.ResourceTotalDetail;
 
 import java.math.BigDecimal;
-import java.util.ArrayList;
+import java.text.SimpleDateFormat;
+import java.util.Collections;
 import java.util.Date;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Objects;
+import java.util.Optional;
+import java.util.stream.Collectors;
 
 /**
  * ResourceTotalDetail 工具类
  * 提供按工厂、资源、区间开始时间分组获取 totalAbleQuantity 的功能
+ * 使用 Stream 流处理
  *
  * @author 闫
  * @version 1.0
  */
 public class ResourceTotalDetailUtils {
+
+    private static final SimpleDateFormat DATE_FORMAT = new SimpleDateFormat("yyyy-MM-dd");
+
+    /**
+     * 格式化日期为 yyyy-MM-dd 格式
+     *
+     * @param date 日期
+     * @return 格式化后的日期字符串
+     */
+    public static String formatDate(Date date) {
+        if (date == null) {
+            return "";
+        }
+        synchronized (DATE_FORMAT) {
+            return DATE_FORMAT.format(date);
+        }
+    }
 
     /**
      * 分组Key类，用于按工厂、资源、区间开始时间分组
@@ -24,12 +45,18 @@ public class ResourceTotalDetailUtils {
     public static class GroupKey {
         private final String plantCode;
         private final String resourceCode;
-        private final Date periodStartTime;
+        private final String periodStartTimeStr; // yyyy-MM-dd 格式
 
         public GroupKey(String plantCode, String resourceCode, Date periodStartTime) {
             this.plantCode = plantCode;
             this.resourceCode = resourceCode;
-            this.periodStartTime = periodStartTime;
+            this.periodStartTimeStr = formatDate(periodStartTime);
+        }
+
+        public GroupKey(String plantCode, String resourceCode, String periodStartTimeStr) {
+            this.plantCode = plantCode;
+            this.resourceCode = resourceCode;
+            this.periodStartTimeStr = periodStartTimeStr != null ? periodStartTimeStr : "";
         }
 
         public String getPlantCode() {
@@ -40,8 +67,8 @@ public class ResourceTotalDetailUtils {
             return resourceCode;
         }
 
-        public Date getPeriodStartTime() {
-            return periodStartTime;
+        public String getPeriodStartTimeStr() {
+            return periodStartTimeStr;
         }
 
         @Override
@@ -54,25 +81,26 @@ public class ResourceTotalDetailUtils {
             if (plantCode != null ? !plantCode.equals(groupKey.plantCode) : groupKey.plantCode != null) return false;
             if (resourceCode != null ? !resourceCode.equals(groupKey.resourceCode) : groupKey.resourceCode != null)
                 return false;
-            return periodStartTime != null ? periodStartTime.equals(groupKey.periodStartTime) : groupKey.periodStartTime == null;
+            return periodStartTimeStr != null ? periodStartTimeStr.equals(groupKey.periodStartTimeStr) : groupKey.periodStartTimeStr == null;
         }
 
         @Override
         public int hashCode() {
             int result = plantCode != null ? plantCode.hashCode() : 0;
             result = 31 * result + (resourceCode != null ? resourceCode.hashCode() : 0);
-            result = 31 * result + (periodStartTime != null ? periodStartTime.hashCode() : 0);
+            result = 31 * result + (periodStartTimeStr != null ? periodStartTimeStr.hashCode() : 0);
             return result;
         }
 
         @Override
         public String toString() {
-            return plantCode + "_" + resourceCode + "_" + (periodStartTime != null ? periodStartTime.getTime() : "null");
+            return plantCode + "_" + resourceCode + "_" + periodStartTimeStr;
         }
     }
 
     /**
      * 按工厂代码、资源代码、区间开始时间分组，获取每组的 totalAbleQuantity 总和
+     * 使用 Stream 流处理
      *
      * @param resourceTotalDetailList 资源总量详情列表
      * @return 分组后的 totalAbleQuantity Map，key为分组标识，value为该分组的 totalAbleQuantity 总和
@@ -80,43 +108,30 @@ public class ResourceTotalDetailUtils {
     public static Map<GroupKey, BigDecimal> groupByPlantResourcePeriodAndSumTotalAbleQuantity(
             List<ResourceTotalDetail> resourceTotalDetailList) {
 
-        Map<GroupKey, BigDecimal> resultMap = new HashMap<>();
-
         if (resourceTotalDetailList == null || resourceTotalDetailList.isEmpty()) {
-            return resultMap;
+            return Collections.emptyMap();
         }
 
-        for (ResourceTotalDetail detail : resourceTotalDetailList) {
-            if (detail == null) {
-                continue;
-            }
-
-            GroupKey key = new GroupKey(
-                    detail.getPlantCode(),
-                    detail.getResourceCode(),
-                    detail.getPeriodStartTime()
-            );
-
-            BigDecimal currentTotal = resultMap.get(key);
-            BigDecimal detailQuantity = detail.getTotalAbleQuantity();
-
-            if (detailQuantity == null) {
-                detailQuantity = BigDecimal.ZERO;
-            }
-
-            if (currentTotal == null) {
-                resultMap.put(key, detailQuantity);
-            } else {
-                resultMap.put(key, currentTotal.add(detailQuantity));
-            }
-        }
-
-        return resultMap;
+        return resourceTotalDetailList.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(
+                        detail -> new GroupKey(
+                                detail.getPlantCode(),
+                                detail.getResourceCode(),
+                                detail.getPeriodStartTime()
+                        ),
+                        Collectors.reducing(
+                                BigDecimal.ZERO,
+                                detail -> detail.getTotalAbleQuantity() != null ? detail.getTotalAbleQuantity() : BigDecimal.ZERO,
+                                BigDecimal::add
+                        )
+                ));
     }
 
     /**
      * 按工厂代码、资源代码、区间开始时间分组，获取每组的 totalAbleQuantity 总和
-     * 返回 String 类型的 Key
+     * 返回 String 类型的 Key (格式: plantCode_resourceCode_periodStartTime(yyyy-MM-dd))
+     * 使用 Stream 流处理
      *
      * @param resourceTotalDetailList 资源总量详情列表
      * @return 分组后的 totalAbleQuantity Map，key为"plantCode_resourceCode_periodStartTime"格式，value为该分组的 totalAbleQuantity 总和
@@ -124,38 +139,25 @@ public class ResourceTotalDetailUtils {
     public static Map<String, BigDecimal> groupByPlantResourcePeriodAndSumTotalAbleQuantityWithStringKey(
             List<ResourceTotalDetail> resourceTotalDetailList) {
 
-        Map<String, BigDecimal> resultMap = new HashMap<>();
-
         if (resourceTotalDetailList == null || resourceTotalDetailList.isEmpty()) {
-            return resultMap;
+            return Collections.emptyMap();
         }
 
-        for (ResourceTotalDetail detail : resourceTotalDetailList) {
-            if (detail == null) {
-                continue;
-            }
-
-            String key = detail.getGroupKey();
-
-            BigDecimal currentTotal = resultMap.get(key);
-            BigDecimal detailQuantity = detail.getTotalAbleQuantity();
-
-            if (detailQuantity == null) {
-                detailQuantity = BigDecimal.ZERO;
-            }
-
-            if (currentTotal == null) {
-                resultMap.put(key, detailQuantity);
-            } else {
-                resultMap.put(key, currentTotal.add(detailQuantity));
-            }
-        }
-
-        return resultMap;
+        return resourceTotalDetailList.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(
+                        ResourceTotalDetail::getGroupKey,
+                        Collectors.reducing(
+                                BigDecimal.ZERO,
+                                detail -> detail.getTotalAbleQuantity() != null ? detail.getTotalAbleQuantity() : BigDecimal.ZERO,
+                                BigDecimal::add
+                        )
+                ));
     }
 
     /**
      * 按工厂代码、资源代码、区间开始时间分组
+     * 使用 Stream 流处理
      *
      * @param resourceTotalDetailList 资源总量详情列表
      * @return 分组后的 Map，key为分组标识，value为该分组的资源详情列表
@@ -163,36 +165,44 @@ public class ResourceTotalDetailUtils {
     public static Map<GroupKey, List<ResourceTotalDetail>> groupByPlantResourcePeriod(
             List<ResourceTotalDetail> resourceTotalDetailList) {
 
-        Map<GroupKey, List<ResourceTotalDetail>> resultMap = new HashMap<>();
+        if (resourceTotalDetailList == null || resourceTotalDetailList.isEmpty()) {
+            return Collections.emptyMap();
+        }
+
+        return resourceTotalDetailList.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(
+                        detail -> new GroupKey(
+                                detail.getPlantCode(),
+                                detail.getResourceCode(),
+                                detail.getPeriodStartTime()
+                        )
+                ));
+    }
+
+    /**
+     * 按工厂代码、资源代码、区间开始时间分组
+     * 返回 String 类型的 Key
+     * 使用 Stream 流处理
+     *
+     * @param resourceTotalDetailList 资源总量详情列表
+     * @return 分组后的 Map，key为"plantCode_resourceCode_periodStartTime"格式，value为该分组的资源详情列表
+     */
+    public static Map<String, List<ResourceTotalDetail>> groupByPlantResourcePeriodWithStringKey(
+            List<ResourceTotalDetail> resourceTotalDetailList) {
 
         if (resourceTotalDetailList == null || resourceTotalDetailList.isEmpty()) {
-            return resultMap;
+            return Collections.emptyMap();
         }
 
-        for (ResourceTotalDetail detail : resourceTotalDetailList) {
-            if (detail == null) {
-                continue;
-            }
-
-            GroupKey key = new GroupKey(
-                    detail.getPlantCode(),
-                    detail.getResourceCode(),
-                    detail.getPeriodStartTime()
-            );
-
-            List<ResourceTotalDetail> detailList = resultMap.get(key);
-            if (detailList == null) {
-                detailList = new ArrayList<>();
-                resultMap.put(key, detailList);
-            }
-            detailList.add(detail);
-        }
-
-        return resultMap;
+        return resourceTotalDetailList.stream()
+                .filter(Objects::nonNull)
+                .collect(Collectors.groupingBy(ResourceTotalDetail::getGroupKey));
     }
 
     /**
      * 根据工厂代码、资源代码、区间开始时间获取对应的 totalAbleQuantity
+     * 使用 Stream 流处理
      *
      * @param resourceTotalDetailList 资源总量详情列表
      * @param plantCode               工厂代码
@@ -210,33 +220,50 @@ public class ResourceTotalDetailUtils {
             return null;
         }
 
-        BigDecimal total = BigDecimal.ZERO;
-        boolean found = false;
+        String periodStartTimeStr = formatDate(periodStartTime);
 
-        for (ResourceTotalDetail detail : resourceTotalDetailList) {
-            if (detail == null) {
-                continue;
-            }
+        Optional<BigDecimal> result = resourceTotalDetailList.stream()
+                .filter(Objects::nonNull)
+                .filter(detail -> Objects.equals(plantCode, detail.getPlantCode()))
+                .filter(detail -> Objects.equals(resourceCode, detail.getResourceCode()))
+                .filter(detail -> periodStartTimeStr.equals(detail.getPeriodStartTimeFormatted()))
+                .map(detail -> detail.getTotalAbleQuantity() != null ? detail.getTotalAbleQuantity() : BigDecimal.ZERO)
+                .reduce(BigDecimal::add);
 
-            boolean plantMatch = (plantCode == null && detail.getPlantCode() == null) ||
-                    (plantCode != null && plantCode.equals(detail.getPlantCode()));
+        return result.orElse(null);
+    }
 
-            boolean resourceMatch = (resourceCode == null && detail.getResourceCode() == null) ||
-                    (resourceCode != null && resourceCode.equals(detail.getResourceCode()));
+    /**
+     * 根据工厂代码、资源代码、区间开始时间(yyyy-MM-dd格式字符串)获取对应的 totalAbleQuantity
+     * 使用 Stream 流处理
+     *
+     * @param resourceTotalDetailList 资源总量详情列表
+     * @param plantCode               工厂代码
+     * @param resourceCode            资源代码
+     * @param periodStartTimeStr      区间开始时间 (yyyy-MM-dd格式)
+     * @return 对应的 totalAbleQuantity 总和，如果未找到返回 null
+     */
+    public static BigDecimal getTotalAbleQuantity(
+            List<ResourceTotalDetail> resourceTotalDetailList,
+            String plantCode,
+            String resourceCode,
+            String periodStartTimeStr) {
 
-            boolean periodMatch = (periodStartTime == null && detail.getPeriodStartTime() == null) ||
-                    (periodStartTime != null && periodStartTime.equals(detail.getPeriodStartTime()));
-
-            if (plantMatch && resourceMatch && periodMatch) {
-                found = true;
-                BigDecimal quantity = detail.getTotalAbleQuantity();
-                if (quantity != null) {
-                    total = total.add(quantity);
-                }
-            }
+        if (resourceTotalDetailList == null || resourceTotalDetailList.isEmpty()) {
+            return null;
         }
 
-        return found ? total : null;
+        String finalPeriodStr = periodStartTimeStr != null ? periodStartTimeStr : "";
+
+        Optional<BigDecimal> result = resourceTotalDetailList.stream()
+                .filter(Objects::nonNull)
+                .filter(detail -> Objects.equals(plantCode, detail.getPlantCode()))
+                .filter(detail -> Objects.equals(resourceCode, detail.getResourceCode()))
+                .filter(detail -> finalPeriodStr.equals(detail.getPeriodStartTimeFormatted()))
+                .map(detail -> detail.getTotalAbleQuantity() != null ? detail.getTotalAbleQuantity() : BigDecimal.ZERO)
+                .reduce(BigDecimal::add);
+
+        return result.orElse(null);
     }
 
     /**
@@ -259,6 +286,75 @@ public class ResourceTotalDetailUtils {
         }
 
         GroupKey key = new GroupKey(plantCode, resourceCode, periodStartTime);
+        return groupedMap.get(key);
+    }
+
+    /**
+     * 根据分组 Map 获取对应的 totalAbleQuantity
+     *
+     * @param groupedMap         已分组的 Map
+     * @param plantCode          工厂代码
+     * @param resourceCode       资源代码
+     * @param periodStartTimeStr 区间开始时间 (yyyy-MM-dd格式)
+     * @return 对应的 totalAbleQuantity，如果未找到返回 null
+     */
+    public static BigDecimal getTotalAbleQuantityFromGroupedMap(
+            Map<GroupKey, BigDecimal> groupedMap,
+            String plantCode,
+            String resourceCode,
+            String periodStartTimeStr) {
+
+        if (groupedMap == null || groupedMap.isEmpty()) {
+            return null;
+        }
+
+        GroupKey key = new GroupKey(plantCode, resourceCode, periodStartTimeStr);
+        return groupedMap.get(key);
+    }
+
+    /**
+     * 根据 String Key 格式的分组 Map 获取对应的 totalAbleQuantity
+     *
+     * @param groupedMap         已分组的 Map (String Key 格式)
+     * @param plantCode          工厂代码
+     * @param resourceCode       资源代码
+     * @param periodStartTime    区间开始时间
+     * @return 对应的 totalAbleQuantity，如果未找到返回 null
+     */
+    public static BigDecimal getTotalAbleQuantityFromStringKeyMap(
+            Map<String, BigDecimal> groupedMap,
+            String plantCode,
+            String resourceCode,
+            Date periodStartTime) {
+
+        if (groupedMap == null || groupedMap.isEmpty()) {
+            return null;
+        }
+
+        String key = plantCode + "_" + resourceCode + "_" + formatDate(periodStartTime);
+        return groupedMap.get(key);
+    }
+
+    /**
+     * 根据 String Key 格式的分组 Map 获取对应的 totalAbleQuantity
+     *
+     * @param groupedMap         已分组的 Map (String Key 格式)
+     * @param plantCode          工厂代码
+     * @param resourceCode       资源代码
+     * @param periodStartTimeStr 区间开始时间 (yyyy-MM-dd格式)
+     * @return 对应的 totalAbleQuantity，如果未找到返回 null
+     */
+    public static BigDecimal getTotalAbleQuantityFromStringKeyMap(
+            Map<String, BigDecimal> groupedMap,
+            String plantCode,
+            String resourceCode,
+            String periodStartTimeStr) {
+
+        if (groupedMap == null || groupedMap.isEmpty()) {
+            return null;
+        }
+
+        String key = plantCode + "_" + resourceCode + "_" + (periodStartTimeStr != null ? periodStartTimeStr : "");
         return groupedMap.get(key);
     }
 }
